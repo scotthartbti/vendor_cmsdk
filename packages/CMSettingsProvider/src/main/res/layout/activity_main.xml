@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="org.cyanogenmod.platform.MainActivity">
+
+    <FrameLayout
+        android:layout_width="50dp"
+        android:layout_height="50dp">
+        <org.cyanogenmod.internal.policy.NetworkTraffic
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center" />
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/launch_color_picker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/launch_color_picker" />
+
+    <Button
+        android:id="@+id/launch_dexopt_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/launch_dexopt_dialog" />
+
+</LinearLayout>
