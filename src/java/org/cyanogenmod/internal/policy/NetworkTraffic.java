@@ -156,6 +156,7 @@ public class NetworkTraffic extends TextView {
         private boolean shouldHide(long rxData, long txData, long timeDelta) {
             long speedTxKB = (long) (txData / (timeDelta / 1000f)) / KILOBYTE;
             long speedRxKB = (long) (rxData / (timeDelta / 1000f)) / KILOBYTE;
+            int mState = 2;
             return mAutoHide &&
                    (mState == MASK_DOWN && speedRxKB <= mAutoHideThreshold ||
                     mState == MASK_UP && speedTxKB <= mAutoHideThreshold ||
