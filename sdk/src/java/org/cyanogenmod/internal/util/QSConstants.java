@@ -71,6 +71,8 @@ public class QSConstants {
     public static final String TILE_FLOAT_MODE = "float_mode";
     public static final String TILE_HALO = "halo";
 
+    public static final String TILE_POWER = "power_menu";
+					
     public static final String DYNAMIC_TILE_NEXT_ALARM = "next_alarm";
     public static final String DYNAMIC_TILE_IME_SELECTOR = "ime_selector";
     public static final String DYNAMIC_TILE_SU = "su";
@@ -115,6 +117,7 @@ public class QSConstants {
         STATIC_TILES_AVAILABLE.add(TILE_SYNC);
         STATIC_TILES_AVAILABLE.add(TILE_BATTERY_SAVER);
         STATIC_TILES_AVAILABLE.add(TILE_CAFFEINE);
+        STATIC_TILES_AVAILABLE.add(TILE_POWER);
         STATIC_TILES_AVAILABLE.add(TILE_SCREENSHOT);
         STATIC_TILES_AVAILABLE.add(TILE_SCREEN_OFF);
         STATIC_TILES_AVAILABLE.add(TILE_BRIGHTNESS);
