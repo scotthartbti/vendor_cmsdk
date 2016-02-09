@@ -1793,6 +1793,14 @@ public final class CMSettings {
                 sBooleanValidator;
 
         /**
+         * Whether or not to launch default music player when headset is connected
+         */
+        public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player";
+
+        /** @hide */
+        public static final Validator HEADSET_CONNECT_PLAYER_VALIDATOR = sBooleanValidator;
+
+        /**
          * I can haz more bukkits
          * @hide
          */
@@ -1895,6 +1903,7 @@ public final class CMSettings {
                 CMSettings.System.STATUS_BAR_SHOW_BATTERY_PERCENT,
                 CMSettings.System.VOLUME_KEYS_CONTROL_RING_STREAM,
                 CMSettings.System.NAVIGATION_BAR_MENU_ARROW_KEYS,
+                CMSettings.System.HEADSET_CONNECT_PLAYER,
         };
 
         /**
@@ -2039,6 +2048,7 @@ public final class CMSettings {
                     NOTIFICATION_LIGHT_PULSE_CUSTOM_VALUES_VALIDATOR);
             VALIDATORS.put(NOTIFICATION_LIGHT_COLOR_AUTO,
                     NOTIFICATION_LIGHT_COLOR_AUTO_VALIDATOR);
+            VALIDATORS.put(HEADSET_CONNECT_PLAYER, HEADSET_CONNECT_PLAYER_VALIDATOR);
             VALIDATORS.put(HEADS_UP_CUSTOM_VALUES, HEADS_UP_CUSTOM_VALUES_VALIDATOR);
             VALIDATORS.put(HEADS_UP_BLACKLIST_VALUES, HEADS_UP_BLACKLIST_VALUES_VALIDATOR);
             VALIDATORS.put(HEADS_UP_WHITELIST_VALUES, HEADS_UP_WHITELIST_VALUES_VALIDATOR);
