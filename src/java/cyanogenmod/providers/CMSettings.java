@@ -949,7 +949,7 @@ public final class CMSettings {
         public static final Validator NAV_BUTTONS_VALIDATOR =
                 new DelimitedListValidator(new String[] {"empty", "home", "back", "search",
                         "recent", "menu0", "menu1", "menu2", "dpad_left", "dpad_right", "power", "notifications",
-                        "torch", "camera", "screenshot", "expand", "pie", "screenrecord", "killtask", "app_picker"}, "|", true);
+                        "torch", "camera", "screenshot", "expand", "screenrecord", "killtask", "app_picker"}, "|", true);
 
         /**
          * Volume key controls ringtone or media sound stream
