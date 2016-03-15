@@ -2739,13 +2739,6 @@ public final class CMSettings {
          */
         public static final String VIBRATOR_INTENSITY = "vibrator_intensity";
 
-        /**
-         * Display gamma calibration values
-         * Suffix this with the control to set
-         * @hide
-         */
-        public static final String DISPLAY_GAMMA_CALIBRATION_PREFIX = "display_gamma_";
-
         // endregion
 
         /**
