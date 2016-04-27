@@ -24,8 +24,8 @@ import java.util.List;
 
 /** @hide */
 oneway interface IRequestInfoListener {
-    void onWeatherRequestCompleted(in RequestInfo requestInfo, int status,
+    void onWeatherRequestCompleted(in RequestInfo requestInfo, int state,
         in WeatherInfo weatherInfo);
-    void onLookupCityRequestCompleted(in RequestInfo requestInfo, int status,
+    void onLookupCityRequestCompleted(in RequestInfo requestInfo,
         in List<WeatherLocation> weatherLocation);
 }
