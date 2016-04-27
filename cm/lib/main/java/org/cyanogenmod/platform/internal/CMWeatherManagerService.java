@@ -222,9 +222,9 @@ public class CMWeatherManagerService extends SystemService{
         }
 
         @Override
-        public void cancelRequest(int requestId) {
+        public void cancelRequest(RequestInfo info) {
             enforcePermission();
-            processCancelRequest(requestId);
+            processCancelRequest(info);
         }
     };
 
@@ -340,10 +340,10 @@ public class CMWeatherManagerService extends SystemService{
         }
     }
 
-    private void processCancelRequest(int requestId) {
+    private void processCancelRequest(RequestInfo info) {
         if (mIsWeatherProviderServiceBound) {
             try {
-                mWeatherProviderService.cancelRequest(requestId);
+                mWeatherProviderService.cancelRequest(info);
             } catch (RemoteException e) {
             }
         }

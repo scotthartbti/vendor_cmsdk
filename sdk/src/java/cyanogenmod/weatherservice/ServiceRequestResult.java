@@ -20,7 +20,6 @@ import android.annotation.NonNull;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import android.text.TextUtils;
 import cyanogenmod.os.Build;
 import cyanogenmod.os.Concierge;
 import cyanogenmod.os.Concierge.ParcelInfo;
@@ -28,8 +27,6 @@ import cyanogenmod.weather.WeatherLocation;
 import cyanogenmod.weather.WeatherInfo;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Use this class to build a request result.
@@ -37,8 +34,8 @@ import java.util.UUID;
 public final class ServiceRequestResult implements Parcelable {
 
     private WeatherInfo mWeatherInfo;
-    private List<WeatherLocation> mLocationLookupList;
-    private String mKey;
+    private ArrayList<WeatherLocation> mLocationLookupList;
+    private int mKey;
 
     private ServiceRequestResult() {}
 
@@ -48,7 +45,7 @@ public final class ServiceRequestResult implements Parcelable {
         int parcelableVersion = parcelInfo.getParcelVersion();
 
         if (parcelableVersion >= Build.CM_VERSION_CODES.ELDERBERRY) {
-            mKey = in.readString();
+            mKey = in.readInt();
             int hasWeatherInfo = in.readInt();
             if (hasWeatherInfo == 1) {
                 mWeatherInfo = WeatherInfo.CREATOR.createFromParcel(in);
@@ -92,7 +89,7 @@ public final class ServiceRequestResult implements Parcelable {
         ParcelInfo parcelInfo = Concierge.prepareParcel(dest);
 
         // ==== ELDERBERRY =====
-        dest.writeString(mKey);
+        dest.writeInt(mKey);
         if (mWeatherInfo != null) {
             dest.writeInt(1);
             mWeatherInfo.writeToParcel(dest, 0);
@@ -113,49 +110,62 @@ public final class ServiceRequestResult implements Parcelable {
         parcelInfo.complete();
     }
 
-    /**
-     * Builder class for {@link ServiceRequestResult}
-     */
     public static class Builder {
-        private WeatherInfo mWeatherInfo;
-        private List<WeatherLocation> mLocationLookupList;
+        private WeatherInfo mBuilderWeatherInfo;
+        private ArrayList<WeatherLocation> mBuilderLocationLookupList;
         public Builder() {
-            this.mWeatherInfo = null;
-            this.mLocationLookupList = null;
+            this.mBuilderWeatherInfo = null;
+            this.mBuilderLocationLookupList = null;
         }
 
         /**
+         * Add the supplied weather information to the result. Attempting to add a WeatherLocation
+         * list to the same builder will cause the system to throw IllegalArgumentException
+         *
          * @param weatherInfo The WeatherInfo object holding the data that will be used to update
          *                    the weather content provider
          */
-        public Builder(@NonNull WeatherInfo weatherInfo) {
+        public Builder setWeatherInfo(@NonNull WeatherInfo weatherInfo) {
+            if (mBuilderLocationLookupList != null) {
+                throw new IllegalArgumentException("Can't add weather information when you have"
+                        + " already added a WeatherLocation list");
+            }
+
             if (weatherInfo == null) {
                 throw new IllegalArgumentException("WeatherInfo can't be null");
             }
 
-            mWeatherInfo = weatherInfo;
+            mBuilderWeatherInfo = weatherInfo;
+            return this;
         }
 
         /**
+         * Add the supplied list of WeatherLocation objects to the result. Attempting to add a
+         * WeatherInfo object to the same builder will cause the system to throw
+         * IllegalArgumentException
+         *
          * @param locations The list of WeatherLocation objects. The list should not be null
          */
-        public Builder(@NonNull List<WeatherLocation> locations) {
-            if (locations == null) {
-                throw new IllegalArgumentException("Weather location list can't be null");
+        public Builder setLocationLookupList(@NonNull ArrayList<WeatherLocation> locations) {
+            if (mBuilderWeatherInfo != null) {
+                throw new IllegalArgumentException("Can't add a WeatherLocation list when you have"
+                        + " already added weather information");
             }
-            mLocationLookupList = locations;
+
+            mBuilderLocationLookupList = locations;
+            return this;
         }
 
         /**
-         * Creates a {@link ServiceRequestResult} with the arguments
+         * Creates a {@link ServiceRequest} with the arguments
          * supplied to this builder
          * @return {@link ServiceRequestResult}
          */
         public ServiceRequestResult build() {
             ServiceRequestResult result = new ServiceRequestResult();
-            result.mWeatherInfo = this.mWeatherInfo;
-            result.mLocationLookupList = this.mLocationLookupList;
-            result.mKey = UUID.randomUUID().toString();
+            result.mWeatherInfo = this.mBuilderWeatherInfo;
+            result.mLocationLookupList = this.mBuilderLocationLookupList;
+            result.mKey = this.hashCode();
             return result;
         }
     }
@@ -170,25 +180,24 @@ public final class ServiceRequestResult implements Parcelable {
     /**
      * @return The list of WeatherLocation objects supplied by the weather provider service
      */
-    public List<WeatherLocation> getLocationLookupList() {
-        return new ArrayList<>(mLocationLookupList);
+    public ArrayList<WeatherLocation> getLocationLookupList() {
+        return mLocationLookupList;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((mKey != null) ? mKey.hashCode() : 0);
-        return result;
+        //The hashcode of this object was stored when it was built. This is an
+        //immutable object but we need to preserve the hashcode since this object is parcelable and
+        //it's reconstructed over IPC, and clients of this object might want to store it in a
+        //collection that relies on this code to identify the object
+        return mKey;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) return false;
-
-        if (getClass() == obj.getClass()) {
+        if (obj instanceof ServiceRequestResult) {
             ServiceRequestResult request = (ServiceRequestResult) obj;
-            return (TextUtils.equals(mKey, request.mKey));
+            return (request.hashCode() == this.mKey);
         }
         return false;
     }

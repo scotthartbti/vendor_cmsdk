@@ -28,5 +28,5 @@ interface ICMWeatherManager {
     oneway void unregisterWeatherServiceProviderChangeListener(
         in IWeatherServiceProviderChangeListener listener);
     String getActiveWeatherServiceProviderLabel();
-    oneway void cancelRequest(int requestId);
+    oneway void cancelRequest(in RequestInfo info);
 }

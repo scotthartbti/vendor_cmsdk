@@ -131,14 +131,14 @@ public class CMWeatherManager {
      * @param listener {@link WeatherUpdateRequestListener} To be notified once the active weather
      *                                                     service provider has finished
      *                                                     processing your request
-     * @return An integer that identifies the request submitted to the weather service
-     * Note that this method might return -1 if an error occurred while trying to submit
+     * @return A {@link RequestInfo} identifying the request submitted to the weather service.
+     * Note that this method might return null if an error occurred while trying to submit
      * the request.
      */
-    public int requestWeatherUpdate(@NonNull Location location,
+    public RequestInfo requestWeatherUpdate(@NonNull Location location,
             @NonNull WeatherUpdateRequestListener listener) {
         if (sWeatherManagerService == null) {
-            return -1;
+            return null;
         }
 
         try {
@@ -148,9 +148,9 @@ public class CMWeatherManager {
                     .build();
             if (listener != null) mWeatherUpdateRequestListeners.put(info, listener);
             sWeatherManagerService.updateWeather(info);
-            return info.hashCode();
+            return info;
         } catch (RemoteException e) {
-            return -1;
+            return null;
         }
     }
 
@@ -164,14 +164,14 @@ public class CMWeatherManager {
      * @param listener {@link WeatherUpdateRequestListener} To be notified once the active weather
      *                                                     service provider has finished
      *                                                     processing your request
-     * @return An integer that identifies the request submitted to the weather service.
-     * Note that this method might return -1 if an error occurred while trying to submit
+     * @return A {@link RequestInfo} identifying the request submitted to the weather service.
+     * Note that this method might return null if an error occurred while trying to submit
      * the request.
      */
-    public int requestWeatherUpdate(@NonNull WeatherLocation weatherLocation,
+    public RequestInfo requestWeatherUpdate(@NonNull WeatherLocation weatherLocation,
             @NonNull WeatherUpdateRequestListener listener) {
         if (sWeatherManagerService == null) {
-            return -1;
+            return null;
         }
 
         try {
@@ -181,9 +181,9 @@ public class CMWeatherManager {
                     .build();
             if (listener != null) mWeatherUpdateRequestListeners.put(info, listener);
             sWeatherManagerService.updateWeather(info);
-            return info.hashCode();
+            return info;
         } catch (RemoteException e) {
-            return -1;
+            return null;
         }
     }
 
@@ -195,13 +195,13 @@ public class CMWeatherManager {
      *                                                  completed. Upon success, a list of
      *                                                  {@link cyanogenmod.weather.WeatherLocation}
      *                                                  will be provided
-     * @return An integer that identifies the request submitted to the weather service.
-     * Note that this method might return -1 if an error occurred while trying to submit
+     * @return A {@link RequestInfo} identifying the request submitted to the weather service.
+     * Note that this method might return null if an error occurred while trying to submit
      * the request.
      */
-    public int lookupCity(@NonNull String city, @NonNull LookupCityRequestListener listener) {
+    public RequestInfo lookupCity(@NonNull String city, @NonNull LookupCityRequestListener listener) {
         if (sWeatherManagerService == null) {
-            return -1;
+            return null;
         }
         try {
             RequestInfo info = new RequestInfo
@@ -210,23 +210,26 @@ public class CMWeatherManager {
                     .build();
             if (listener != null) mLookupNameRequestListeners.put(info, listener);
             sWeatherManagerService.lookupCity(info);
-            return info.hashCode();
+            return info;
         } catch (RemoteException e) {
-            return -1;
+            return null;
         }
     }
 
     /**
      * Cancels a request that was previously submitted to the weather service.
-     * @param requestId The ID that you received when the request was submitted
+     * @param info The {@link RequestInfo} that you received when the request was submitted
      */
-    public void cancelRequest(int requestId) {
+    public void cancelRequest(RequestInfo info) {
         if (sWeatherManagerService == null) {
+            return;
+        }
+        if (info == null) {
             return;
         }
 
         try {
-            sWeatherManagerService.cancelRequest(requestId);
+            sWeatherManagerService.cancelRequest(info);
         }catch (RemoteException e){
         }
     }
@@ -342,7 +345,11 @@ public class CMWeatherManager {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        listener.onLookupCityRequestCompleted(weatherLocations);
+                        ArrayList<WeatherLocation> list = null;
+                        if (weatherLocations != null) {
+                            list = new ArrayList<>(weatherLocations);
+                        }
+                        listener.onLookupCityRequestCompleted(list);
                     }
                 });
             }
@@ -379,7 +386,7 @@ public class CMWeatherManager {
          *
          * @param locations
          */
-        void onLookupCityRequestCompleted(List<WeatherLocation> locations);
+        void onLookupCityRequestCompleted(ArrayList<WeatherLocation> locations);
     }
 
     /**
