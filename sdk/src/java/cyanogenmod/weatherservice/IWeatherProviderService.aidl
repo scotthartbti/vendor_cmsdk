@@ -25,5 +25,4 @@ oneway interface IWeatherProviderService {
     void processCityNameLookupRequest(in RequestInfo request);
     void setServiceClient(in IWeatherProviderServiceClient client);
     void cancelOngoingRequests();
-    void cancelRequest(in RequestInfo request);
 }
