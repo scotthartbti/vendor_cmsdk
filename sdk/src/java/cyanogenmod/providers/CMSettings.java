@@ -2796,13 +2796,6 @@ public final class CMSettings {
         public static final String ENABLED_EVENT_LIVE_LOCKS_KEY = "live_lockscreens_events_enabled";
 
         /**
-         * Current active & enabled Weather Provider Service
-         *
-         * @hide
-         */
-        public static final String WEATHER_PROVIDER_SERVICE = "weather_provider_service";
-
-        /**
          * Set to 0 when we enter the CM Setup Wizard.
          * Set to 1 when we exit the CM Setup Wizard.
          *
