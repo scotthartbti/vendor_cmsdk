@@ -21,7 +21,6 @@ import android.app.ActivityManagerNative;
 import android.app.IActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -56,8 +55,6 @@ import android.util.Log;
 import com.android.server.SystemService;
 
 import cyanogenmod.app.CMContextConstants;
-import cyanogenmod.app.CMStatusBarManager;
-import cyanogenmod.app.CustomTile;
 import cyanogenmod.providers.CMSettings;
 import cyanogenmod.providers.ThemesContract.MixnMatchColumns;
 import cyanogenmod.providers.ThemesContract.ThemesColumns;
@@ -67,8 +64,6 @@ import cyanogenmod.themes.IThemeService;
 import cyanogenmod.themes.ThemeChangeRequest;
 
 import org.cyanogenmod.internal.util.ImageUtils;
-import org.cyanogenmod.internal.util.QSConstants;
-import org.cyanogenmod.internal.util.QSUtils;
 import org.cyanogenmod.internal.util.ThemeUtils;
 import org.cyanogenmod.platform.internal.AppsFailureReceiver;
 
@@ -105,7 +100,9 @@ public class ThemeManagerService extends CMSystemService {
     private static final String CM_SETUPWIZARD_PACKAGE = "com.cyanogenmod.setupwizard";
     private static final String MANAGED_PROVISIONING_PACKAGE = "com.android.managedprovisioning";
 
-    private static final String CATEGORY_THEME_CHOOSER = "cyanogenmod.intent.category.APP_THEMES";
+    private static final String[] LAUNCHER_KILL_BLACKLIST = new String[] {
+            "com.android.launcher3"
+    };
 
     // Defines a min and max compatible api level for themes on this system.
     private static final int MIN_COMPATIBLE_VERSION = 21;
@@ -274,8 +271,6 @@ public class ThemeManagerService extends CMSystemService {
             }
             registerAppsFailureReceiver();
             processInstalledThemes();
-        } else if (phase == SystemService.PHASE_BOOT_COMPLETED) {
-            publishThemesTile();
         }
     }
 
@@ -308,6 +303,8 @@ public class ThemeManagerService extends CMSystemService {
         currentThemeMap.put(ThemesColumns.MODIFIES_STATUS_BAR, config.getOverlayForStatusBar());
         currentThemeMap.put(ThemesColumns.MODIFIES_NAVIGATION_BAR,
                 config.getOverlayForNavBar());
+        currentThemeMap.put(ThemesColumns.MODIFIES_STATUSBAR_HEADERS,
+                config.getOverlayForHeaders());
         currentThemeMap.put(ThemesColumns.MODIFIES_OVERLAYS, config.getOverlayPkgName());
 
         // Look at each component's theme (that we care about at least) and check compatibility
@@ -803,6 +800,7 @@ public class ThemeManagerService extends CMSystemService {
                 request.getIconsThemePackageName() != null ||
                 request.getStatusBarThemePackageName() != null ||
                 request.getNavBarThemePackageName() != null ||
+                request.getHeadersThemePackageName() != null ||
                 request.getPerAppOverlays().size() > 0;
     }
 
@@ -835,11 +833,17 @@ public class ThemeManagerService extends CMSystemService {
                     request.getNavBarThemePackageName() : pkgName);
         }
 
+        if (request.getHeadersThemePackageName() != null) {
+            builder.overlay(ThemeConfig.SYSTEMUI_STATUSBAR_HEADER_PKG, pkgName == null ?
+                    request.getHeadersThemePackageName() : pkgName);
+        }
+
         // check for any per app overlays being applied
         Map<String, String> appOverlays = request.getPerAppOverlays();
         for (String appPkgName : appOverlays.keySet()) {
             if (appPkgName != null) {
-                builder.overlay(appPkgName, appOverlays.get(appPkgName));
+                String appOverlay = appOverlays.get(appPkgName);
+                builder.overlay(appPkgName, "default".equals(appOverlay) ? null : appOverlay);
             }
         }
 
@@ -881,12 +885,25 @@ public class ThemeManagerService extends CMSystemService {
                     !isSetupActivity(info) && !handlesThemeChanges(
                     info.activityInfo.applicationInfo.packageName, themeChangeInfos)) {
                 String pkgToStop = info.activityInfo.applicationInfo.packageName;
-                Log.d(TAG, "Force stopping " +  pkgToStop + " for theme change");
-                try {
-                    am.forceStopPackage(pkgToStop);
-                } catch(Exception e) {
-                    Log.e(TAG, "Unable to force stop package, did you forget platform signature?",
-                            e);
+                boolean doKillLauncher = true;
+                for (int i = 0; i < LAUNCHER_KILL_BLACKLIST.length; i++) {
+                    if (TextUtils.equals(pkgToStop, LAUNCHER_KILL_BLACKLIST[i])) {
+                        doKillLauncher = false;
+                        break;
+                    }
+                }
+                if (doKillLauncher) {
+                    Log.d(TAG, "Force stopping " + pkgToStop + " for theme change");
+                    try {
+                        am.forceStopPackage(pkgToStop);
+                    } catch (Exception e) {
+                        Log.e(TAG,
+                                "Unable to force stop package, did you forget platform signature?",
+                                e);
+                    }
+                } else {
+                    Log.d(TAG, "Not force stopping blacklisted launcher " + pkgToStop
+                            + " for theme change");
                 }
             }
         }
@@ -1129,39 +1146,6 @@ public class ThemeManagerService extends CMSystemService {
         return SYSTEM_DEFAULT;
     }
 
-    private void publishThemesTile() {
-        // This action should be performed as system
-        final int userId = UserHandle.myUserId();
-        long token = Binder.clearCallingIdentity();
-        try {
-            final UserHandle user = new UserHandle(userId);
-            final Context resourceContext = QSUtils.getQSTileContext(mContext, userId);
-
-            CMStatusBarManager statusBarManager = CMStatusBarManager.getInstance(mContext);
-            final PendingIntent chooserIntent = getThemeChooserPendingIntent();
-            CustomTile tile = new CustomTile.Builder(resourceContext)
-                    .setLabel(R.string.qs_themes_label)
-                    .setContentDescription(R.string.qs_themes_content_description)
-                    .setIcon(R.drawable.ic_qs_themes)
-                    .setOnClickIntent(chooserIntent)
-                    .setOnLongClickIntent(chooserIntent)
-                    .shouldCollapsePanel(true)
-                    .build();
-            statusBarManager.publishTileAsUser(QSConstants.DYNAMIC_TILE_THEMES,
-                    ThemeManagerService.class.hashCode(), tile, user);
-        } finally {
-            Binder.restoreCallingIdentity(token);
-        }
-    }
-
-    private PendingIntent getThemeChooserPendingIntent() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(CATEGORY_THEME_CHOOSER);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        return PendingIntent.getActivity(mContext, ThemeManagerService.class.hashCode(),
-                intent, 0);
-    }
-
     private final IBinder mService = new IThemeService.Stub() {
         @Override
         public void requestThemeChangeUpdates(IThemeChangeListener listener)
@@ -1196,6 +1180,7 @@ public class ThemeManagerService extends CMSystemService {
                     if (ThemesColumns.MODIFIES_OVERLAYS.equals(key) ||
                             ThemesColumns.MODIFIES_NAVIGATION_BAR.equals(key) ||
                             ThemesColumns.MODIFIES_STATUS_BAR.equals(key) ||
+                            ThemesColumns.MODIFIES_STATUSBAR_HEADERS.equals(key) ||
                             ThemesColumns.MODIFIES_ICONS.equals(key)) {
                         String pkgName = componentMap.get(key);
                         if (mThemesToProcessQueue.indexOf(pkgName) > 0) {
