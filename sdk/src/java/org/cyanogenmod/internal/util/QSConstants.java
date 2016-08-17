@@ -69,7 +69,6 @@ public class QSConstants {
     public static final String TILE_SCREENRECORD = "screenrecord";
     public static final String TILE_RESTART_SYSTEMUI = "restart_systemui";
     public static final String TILE_FLOAT_MODE = "float_mode";
-    public static final String TILE_HALO = "halo";
 
     public static final String TILE_POWER = "power_menu";
 					
@@ -133,7 +132,6 @@ public class QSConstants {
         STATIC_TILES_AVAILABLE.add(TILE_SCREENRECORD);
         STATIC_TILES_AVAILABLE.add(TILE_RESTART_SYSTEMUI);
         STATIC_TILES_AVAILABLE.add(TILE_FLOAT_MODE);
-        STATIC_TILES_AVAILABLE.add(TILE_HALO);
 
         TILES_AVAILABLE.addAll(STATIC_TILES_AVAILABLE);
 
