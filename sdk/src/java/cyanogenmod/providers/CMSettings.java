@@ -2800,6 +2800,12 @@ public final class CMSettings {
         public static final String QS_LOCATION_ADVANCED = "qs_location_advanced";
 
         /**
+         * Whether detail view for the data tile is enabled
+         * @hide
+         */
+        public static final String QS_DATA_ADVANCED = "qs_data_advanced";
+
+        /**
          * Whether to show the keyguard visualizer.
          * Boolean setting. 0 = off, 1 = on.
          * @hide
@@ -2917,6 +2923,7 @@ public final class CMSettings {
                 CMSettings.Secure.PERFORMANCE_PROFILE,
                 CMSettings.Secure.APP_PERFORMANCE_PROFILES_ENABLED,
                 CMSettings.Secure.QS_LOCATION_ADVANCED,
+                CMSettings.Secure.QS_DATA_ADVANCED,
                 CMSettings.Secure.LOCKSCREEN_VISUALIZER_ENABLED,
                 CMSettings.Secure.LOCK_PASS_TO_SECURITY_VIEW
         };
