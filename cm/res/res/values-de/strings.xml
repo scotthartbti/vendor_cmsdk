@@ -178,6 +178,8 @@
   <string name="permlab_observe_audio_sessions">Audiositzungsänderungen überwachen</string>
   <string name="permdesc_observe_audio_sessions">Erlaubt einer App, die Erstellung und Löschung von Audio-Streams zu überwachen.</string>
   <!-- CMAudioService - observe session changes permission -->
+  <string name="permlab_manage_audio_sessions">Audiositzungsänderungen verwalten</string>
+  <string name="permdesc_manage_audio_sessions">Ermöglicht einer App, Audiostream-Aktualisierungen zu senden.</string>
   <!-- QuickSettings: Themes tile -->
   <string name="qs_themes_label">Designs</string>
   <string name="qs_themes_content_description">Passen Sie Ihr Design an</string>
